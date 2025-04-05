@@ -15,7 +15,7 @@ const players = {};
 io.on('connection', (socket) => {
     console.log('Player connected:', socket.id);
 
-    // Create a new player
+    // Create a new player with random color
     players[socket.id] = {
         position: { x: 0, y: 1, z: 0 },
         rotation: { x: 0, y: 0, z: 0 },
@@ -55,4 +55,5 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 3000;
 http.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+    console.log(`Players can connect to: http://localhost:${PORT}`);
 }); 

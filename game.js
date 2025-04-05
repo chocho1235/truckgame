@@ -94,8 +94,8 @@ const truckBody = new CANNON.Body({
     position: new CANNON.Vec3(0, 1, 0),
     material: new CANNON.Material('truckMaterial')
 });
-truckBody.linearDamping = 0.3;
-truckBody.angularDamping = 0.3;
+truckBody.linearDamping = 0.1;
+truckBody.angularDamping = 0.1;
 world.addBody(truckBody);
 
 // Create a material for the ground
@@ -167,10 +167,8 @@ document.addEventListener('keyup', (e) => {
 });
 
 // Game variables
-const maxSpeed = 50;
-const acceleration = 20;
-const turnSpeed = 3;
-let currentSpeed = 0;
+const moveSpeed = 0.3;  // Increased movement speed
+const turnSpeed = 0.08; // Increased turn speed
 
 // Socket.io event handlers
 socket.on('currentPlayers', (players) => {
@@ -234,33 +232,32 @@ function animate() {
     localTruck.position.copy(truckBody.position);
     localTruck.quaternion.copy(truckBody.quaternion);
 
-    // Handle acceleration and deceleration
+    // Movement controls
     if (keys.w) {
-        currentSpeed = Math.min(currentSpeed + acceleration * 0.2, maxSpeed);
-    } else if (keys.s) {
-        currentSpeed = Math.max(currentSpeed - acceleration * 0.2, -maxSpeed);
-    } else {
-        currentSpeed *= 0.9;
-    }
-
-    // Apply movement force
-    if (Math.abs(currentSpeed) > 0.1) {
-        const force = new CANNON.Vec3(
-            Math.sin(truckBody.quaternion.y) * currentSpeed * 2,
+        // Move forward
+        const forward = new CANNON.Vec3(
+            Math.sin(truckBody.quaternion.y) * moveSpeed,
             0,
-            Math.cos(truckBody.quaternion.y) * currentSpeed * 2
+            Math.cos(truckBody.quaternion.y) * moveSpeed
         );
-        truckBody.applyForce(force, truckBody.position);
+        truckBody.position.vadd(forward, truckBody.position);
     }
-
-    // Handle turning
-    if (Math.abs(currentSpeed) > 0.1) {
-        if (keys.a) {
-            truckBody.angularVelocity.y = turnSpeed * (currentSpeed / maxSpeed) * 2;
-        }
-        if (keys.d) {
-            truckBody.angularVelocity.y = -turnSpeed * (currentSpeed / maxSpeed) * 2;
-        }
+    if (keys.s) {
+        // Move backward
+        const backward = new CANNON.Vec3(
+            -Math.sin(truckBody.quaternion.y) * moveSpeed,
+            0,
+            -Math.cos(truckBody.quaternion.y) * moveSpeed
+        );
+        truckBody.position.vadd(backward, truckBody.position);
+    }
+    if (keys.a) {
+        // Turn left
+        truckBody.quaternion.y += turnSpeed;
+    }
+    if (keys.d) {
+        // Turn right
+        truckBody.quaternion.y -= turnSpeed;
     }
 
     // Update obstacle positions
