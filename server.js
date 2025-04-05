@@ -8,7 +8,13 @@ const io = require('socket.io')(http, {
     }
 });
 
-app.use(express.static('.'));
+// Serve static files from the public directory
+app.use(express.static('public'));
+
+// Add a health check endpoint
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+});
 
 const players = {};
 
@@ -50,6 +56,15 @@ io.on('connection', (socket) => {
         delete players[socket.id];
         io.emit('playerDisconnected', socket.id);
     });
+});
+
+// Error handling
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (err) => {
+    console.error('Unhandled Rejection:', err);
 });
 
 const PORT = process.env.PORT || 3000;
